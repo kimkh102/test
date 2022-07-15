@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>금융인증SDK 임시 테스트</title>
+    
+</head>
+
+<body>
+    <button onclick="initSign();">test</button>
+    <script>
+        function initSign() {
+            if (!document.getElementById("finCertSdk")) {
+                loadFinCertSdk(true);
+                console.log(1);
+            } else {
+                _init(true);
+                console.log(2);
+            }
+        }
+
+        function loadFinCertSdk(signGo) {
+            var scriptElem = document.createElement("script");
+            scriptElem.src = "https://t-4user.yeskey.or.kr/v1/fincert.js?dt=" + getYYYYMMDD();
+            scriptElem.id = "finCertSdk";
+            document.querySelector("body").appendChild(scriptElem);
+
+            scriptElem.onerror = function () {
+                customAlert("fincert.js 로딩시 오류 발생");
+            };
+            scriptElem.onload = function () {
+                console.log(3);
+                _init(signGo);
+            };
+        }
+        var failCallback = function (error) {
+        customAlert(
+          "failCallBack() Called!\n" +
+            "error.message: " +
+            error.message +
+            "\n" +
+            "error.code: " +
+            error.code
+        );
+
+        console.error(
+          'failCallBack() Called! (error.message: "' +
+            error.message +
+            '", error.code: "' +
+            error.code +
+            '")'
+        );
+      };
+
+
+        function _init(signGo) {
+            console.log(4);
+            var orgCode = 'DG00110002';
+            var apiKey = '2c98268e-0f12-4e68-af7c-7d58adaac547';
+           /* var clientOrigin = document.getElementById("clientOrigin").value;
+            var uniqVal = document.getElementById("uniqVal").value;
+            var lang = getValueFromSelect("lang");
+            var clientType = getValueFromSelect("clientType");
+            var saveInLocalStroage = getValueFromSelect("saveInLocalStroage");
+            var saveInLocalStorage = getValueFromSelect("saveInLocalStorage");
+            var showAutoConn = getValueFromSelect("showAutoConn");
+            var useAutoConnInfo = getValueFromSelect("useAutoConnInfo");
+            var raIssueAppFunc = getValueFromSelect("raIssueAppFunc");*/
+           
+            var param = {};
+            if (orgCode.length > 0) {
+                param.orgCode = orgCode;
+            }
+
+            if (apiKey.length > 0) {
+                param.apiKey = apiKey;
+            }
+/*
+            if (clientOrigin.length > 0) {
+                param.clientOrigin = clientOrigin;
+            }
+
+            if (uniqVal.length > 0) {
+                param.uniqVal = uniqVal;
+            }
+
+            if (lang.length > 0) {
+                param.lang = lang;
+            }
+
+            if (clientType.length > 0) {
+                param.clientType = clientType;
+            }*/
+
+           /* var css1 = document.getElementById("css1").value;
+            var css2 = document.getElementById("css2").value;
+            var css3 = document.getElementById("css3").value;
+
+            var cssNum = 0;
+            if (css1.length > 0 || css2.length > 0 || css3.length > 0) {
+                param.cssUrls = [];
+                if (css1.length > 0) {
+                    param.cssUrls[cssNum] = css1;
+                    cssNum++;
+                }
+                if (css2.length > 0) {
+                    param.cssUrls[cssNum] = css2;
+                    cssNum++;
+                }
+                if (css3.length > 0) {
+                    param.cssUrls[cssNum] = css3;
+                    cssNum++;
+                }
+            }
+
+            param.saveInLocalStroage = saveInLocalStroage;
+            param.saveInLocalStorage = saveInLocalStorage;
+
+            param.showAutoConn = showAutoConn;
+            param.useAutoConnInfo = useAutoConnInfo;*/
+
+            /*if (raIssueAppFunc) {
+                if (raIssueAppFunc === "string") {
+                    param.raIssueAppFunc = "string";
+                } else if (raIssueAppFunc === "alertFunction") {
+                    param.raIssueAppFunc = function () {
+                        alert(
+                            "사용자가 인증서 발급 버튼을 클릭했을 때 이벤트를 받을 콜백 함수가 호출됨!"
+                        );
+                    };
+                }
+            }*/
+
+            if (JSON.stringify(param) === "{}") {
+                console.log(6);
+                FinCert.Sdk.init();
+            } else {
+                param.success = function () {
+                    //alertPassedTime();
+                    if (signGo) {
+                        console.log(10);
+                       // sign(true);
+                    }
+                };
+
+                param.fail = failCallback;
+
+                //setStartTime();
+                console.log(11);
+                FinCert.Sdk.init(param);
+                console.log(12);
+
+            }
+        }
+
+        function sign(isWithUI, isSignEnvelop) {
+            // 화면에서 삭제
+            console.log(5);
+            document.getElementById("signedVals").value = "";
+            var param = {};
+
+            // signFormat 채우기
+            var type = getValueFromSelect("type");
+            var ssn = document.getElementById("ssn").value;
+            var time = document.getElementById("time").value;
+            var withoutContent = getValueFromSelect("withoutContent");
+            var generalSyntax = getValueFromSelect("generalSyntax");
+            var cmsIncludeR = getValueFromSelect("cmsIncludeR");
+            var includeR = getValueFromSelect("includeR");
+
+            if (
+                ssn.length > 0 ||
+                withoutContent === true ||
+                withoutContent === false ||
+                time.length > 0 ||
+                type.length > 0 ||
+                generalSyntax === true ||
+                generalSyntax === false ||
+                cmsIncludeR === true ||
+                cmsIncludeR === false
+            ) {
+                // signFormat 항목 중 뭔가가 있음
+                param.signFormat = {};
+
+                if (type.length > 0) {
+                    param.signFormat.type = type;
+                }
+
+                if (
+                    ssn.length > 0 ||
+                    withoutContent === true ||
+                    withoutContent === false ||
+                    time.length > 0 ||
+                    generalSyntax === true ||
+                    generalSyntax === false ||
+                    cmsIncludeR === true ||
+                    cmsIncludeR === false
+                ) {
+                    // CMSInfo가 있음
+                    param.signFormat.CMSInfo = {};
+
+                    if (ssn.length > 0) {
+                        param.signFormat.CMSInfo.ssn = ssn;
+                    }
+
+                    if (time.length > 0) {
+                        param.signFormat.CMSInfo.time = time;
+                    }
+
+                    if (withoutContent === true || withoutContent === false) {
+                        param.signFormat.CMSInfo.withoutContent = withoutContent;
+                    }
+
+                    if (generalSyntax === true || generalSyntax === false) {
+                        param.signFormat.CMSInfo.generalSyntax = generalSyntax;
+                    }
+
+                    if (cmsIncludeR === true || cmsIncludeR === false) {
+                        param.signFormat.CMSInfo.includeR = cmsIncludeR;
+                    }
+                }
+
+                if (includeR === true || includeR === false) {
+                    // PKCS1Info가 있음
+                    param.signFormat.PKCS1Info = {};
+                    param.signFormat.PKCS1Info.includeR = includeR;
+                }
+            }
+
+            // content 채우기
+            var plainTexts = new Array();
+            var plainTextElements = document.getElementsByName("plainText");
+            if (
+                plainTextElements.length == 1 &&
+                plainTextElements[0].value === ""
+            ) {
+                // 내용 없음 : 생략
+            } else {
+                for (var i = 0; i < plainTextElements.length; i++) {
+                    try {
+                        plainTexts[i] = JSON.parse(plainTextElements[i].value);
+                    } catch (err) {
+                        plainTexts[i] = plainTextElements[i].value;
+                    }
+                }
+            }
+
+            var encoding = getValueFromSelect("encoding");
+
+            var binaries = new Array();
+            var binaryElements = document.getElementsByName("binary");
+            if (binaryElements.length == 1 && binaryElements[0].value === "") {
+                // 내용 없음 : 생략
+            } else {
+                for (var i = 0; i < binaryElements.length; i++) {
+                    binaries[i] = binaryElements[i].value;
+                }
+            }
+
+            var hashAlgorithm = getValueFromSelect("hashAlgorithm");
+
+            var hashes = new Array();
+            var hashElements = document.getElementsByName("hash");
+            if (hashElements.length == 1 && hashElements[0].value === "") {
+                // 내용 없음 : 생략
+            } else {
+                for (var i = 0; i < hashElements.length; i++) {
+                    hashes[i] = hashElements[i].value;
+                }
+            }
+
+            var multiSigners = new Array();
+            var multiSignerElements = document.getElementsByName("multiSigner");
+            if (
+                multiSignerElements.length == 1 &&
+                multiSignerElements[0].value === ""
+            ) {
+                // 내용 없음 : 생략
+            } else {
+                for (var i = 0; i < multiSignerElements.length; i++) {
+                    multiSigners[i] = multiSignerElements[i].value;
+                }
+            }
+
+            var userAgreement = document.getElementById("userAgreement").value;
+            var realName = getValueFromSelect("realName");
+            var gender = getValueFromSelect("gender");
+            var nationalInfo = getValueFromSelect("nationalInfo");
+            var birthDate = getValueFromSelect("birthDate");
+            var ci = getValueFromSelect("ci");
+            var ispUrlInfo = document.getElementById("ispUrlInfo").value;
+            var ucpidNonce = document.getElementById("ucpidNonce").value;
+
+            if (
+                binaries.length > 0 ||
+                plainTexts.length > 0 ||
+                hashes.length > 0 ||
+                hashAlgorithm.length > 0 ||
+                userAgreement.length > 0 ||
+                multiSigners.length > 0 ||
+                realName === true ||
+                realName === false ||
+                gender === true ||
+                gender === false ||
+                nationalInfo === true ||
+                nationalInfo === false ||
+                birthDate === true ||
+                birthDate === false ||
+                ci === true ||
+                ci === false ||
+                ispUrlInfo.length > 0 ||
+                ucpidNonce.length > 0
+            ) {
+                // content에 해당 되는 내용이 있음
+                param.content = {};
+
+                if (plainTexts.length > 0 || encoding.length > 0) {
+                    // plainText에 해당 되는 내용이 있음
+                    param.content.plainText = {};
+
+                    if (plainTexts.length > 0) {
+                        param.content.plainText.plainTexts = plainTexts;
+                    }
+
+                    if (encoding.length > 0) {
+                        param.content.plainText.encoding = encoding;
+                    }
+                }
+
+                if (binaries.length > 0) {
+                    param.content.binary = {};
+                    param.content.binary.binaries = binaries;
+                }
+
+                if (hashes.length > 0 || hashAlgorithm.length > 0) {
+                    // hash에 해당 되는 내용이 있음
+                    param.content.hash = {};
+
+                    if (hashes.length > 0) {
+                        param.content.hash.hashes = hashes;
+                    }
+
+                    if (hashAlgorithm.length > 0) {
+                        param.content.hash.hashAlgorithm = hashAlgorithm;
+                    }
+                }
+
+                if (multiSigners.length > 0) {
+                    param.content.multiSigner = {};
+                    param.content.multiSigner.signedData = multiSigners;
+                }
+
+                if (
+                    userAgreement.length > 0 ||
+                    realName === true ||
+                    realName === false ||
+                    gender === true ||
+                    gender === false ||
+                    nationalInfo === true ||
+                    nationalInfo === false ||
+                    birthDate === true ||
+                    birthDate === false ||
+                    ci === true ||
+                    ci === false ||
+                    ispUrlInfo.length > 0 ||
+                    ucpidNonce.length > 0
+                ) {
+                    // ucpidInfo에 해당 되는 내용이 있음
+                    param.content.ucpidInfo = {};
+
+                    if (userAgreement.length > 0) {
+                        param.content.ucpidInfo.userAgreement = userAgreement;
+                    }
+
+                    if (ispUrlInfo.length > 0) {
+                        param.content.ucpidInfo.ispUrlInfo = ispUrlInfo;
+                    }
+
+                    if (ucpidNonce.length > 0) {
+                        param.content.ucpidInfo.ucpidNonce = ucpidNonce;
+                    }
+
+                    if (
+                        realName === true ||
+                        realName === false ||
+                        gender === true ||
+                        gender === false ||
+                        nationalInfo === true ||
+                        nationalInfo === false ||
+                        birthDate === true ||
+                        birthDate === false ||
+                        ci === true ||
+                        ci === false
+                    ) {
+                        param.content.ucpidInfo.userAgreeInfo = {};
+
+                        if (realName === true || realName === false) {
+                            param.content.ucpidInfo.userAgreeInfo.realName = realName;
+                        }
+
+                        if (gender === true || gender === false) {
+                            param.content.ucpidInfo.userAgreeInfo.gender = gender;
+                        }
+
+                        if (nationalInfo === true || nationalInfo === false) {
+                            param.content.ucpidInfo.userAgreeInfo.nationalInfo = nationalInfo;
+                        }
+
+                        if (birthDate === true || birthDate === false) {
+                            param.content.ucpidInfo.userAgreeInfo.birthDate = birthDate;
+                        }
+
+                        if (ci === true || ci === false) {
+                            param.content.ucpidInfo.userAgreeInfo.ci = ci;
+                        }
+                    }
+                }
+            }
+
+            // algorithm 채우기
+            var algorithm = getValueFromSelect("algorithm");
+            if (algorithm.length > 0) {
+                param.algorithm = algorithm;
+            }
+
+            var certSeqNum = document.getElementById("certSeqNum").value;
+            if (certSeqNum.length > 0) {
+                // param.certSeqNum = 1 * certSeqNum;
+                param.certSeqNum = certSeqNum;
+            }
+
+            var simpleKeyToken = document.getElementById("simpleKeyToken").value;
+            if (simpleKeyToken.length > 0) {
+                param.simpleKeyToken = simpleKeyToken;
+            }
+
+            var simpleKeyType = getValueFromSelect("sign_simpleKeyType");
+            if (
+                simpleKeyType === "1" ||
+                simpleKeyType === "2" ||
+                simpleKeyType === "3" ||
+                simpleKeyType === "4" ||
+                simpleKeyType === "5"
+            ) {
+                param.simpleKeyType = simpleKeyType;
+            }
+
+            if (isWithUI) {
+                // UI 일때 처리
+                // view 채우기
+
+                var lastAccessCert = getValueFromSelect("lastAccessCert");
+                var oid = getValueFromSelect("1.2.410.200005.1.1.1.10");
+                var enableTextView = getValueFromSelect("enableTextView");
+                var view_certSeqNum = document.getElementById("view_certSeqNum")
+                    .value;
+                var nameValueSeparator = document.getElementById("nameValueSeparator")
+                    .value;
+                var pairSeparator = document.getElementById("pairSeparator").value;
+                var nameExclusionRegExp = document.getElementById(
+                    "nameExclusionRegExp"
+                ).value;
+
+                if (
+                    lastAccessCert === true ||
+                    lastAccessCert === false ||
+                    oid.length > 0 ||
+                    enableTextView === true ||
+                    enableTextView === false ||
+                    view_certSeqNum.length > 0 ||
+                    nameValueSeparator.length > 0 ||
+                    pairSeparator.length > 0 ||
+                    nameExclusionRegExp.length > 0
+                ) {
+                    // view가 있어야 함
+                    param.view = {};
+
+                    if (lastAccessCert === true || lastAccessCert === false) {
+                        param.view.lastAccessCert = lastAccessCert;
+                    }
+
+                    if (oid.length > 0) {
+                        param.view.oid = {
+                            "1.2.410.200005.1.1.1.10": oid
+                        };
+                    }
+
+                    if (enableTextView === true || enableTextView === false) {
+                        param.view.enableTextView = enableTextView;
+                    }
+
+                    if (view_certSeqNum.length > 0) {
+                        // param.view.certSeqNum = 1 * certSeqNum;
+                        param.view.certSeqNum = view_certSeqNum;
+                    }
+
+                    if (
+                        nameValueSeparator.length > 0 ||
+                        pairSeparator.length > 0 ||
+                        nameExclusionRegExp.length > 0
+                    ) {
+                        param.view.enableTextViewAddInfo = {};
+
+                        if (nameValueSeparator.length > 0) {
+                            param.view.enableTextViewAddInfo.nameValueSeparator = nameValueSeparator;
+                        }
+
+                        if (pairSeparator.length > 0) {
+                            param.view.enableTextViewAddInfo.pairSeparator = pairSeparator;
+                        }
+
+                        if (nameExclusionRegExp.length > 0) {
+                            try {
+                                param.view.enableTextViewAddInfo.nameExclusionRegExp = new RegExp(
+                                    nameExclusionRegExp
+                                );
+                            } catch (e) {
+                                param.view.enableTextViewAddInfo.nameExclusionRegExp = nameExclusionRegExp;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // info 채우기
+            var signType = getValueFromSelect("signType");
+            if (isWithUI === false) {
+                // UI 없는 전자서명
+                // signType만 있음
+                if (signType.length > 0) {
+                    param.info = {};
+                    param.info.signType = signType;
+                }
+            } else {
+                // UI 있는 전자서명
+                // signType, simpleKeyReq가 있음
+                var simpleKeyReq = getValueFromSelect("signSimpleKeyReq");
+
+                if (
+                    signType.length > 0 ||
+                    simpleKeyReq === true ||
+                    simpleKeyReq === false
+                ) {
+                    // info 항목이 필요함
+                    param.info = {};
+
+                    if (signType.length > 0) {
+                        param.info.signType = signType;
+                    }
+
+                    if (simpleKeyReq === true || simpleKeyReq === false) {
+                        param.info.simpleKeyReq = simpleKeyReq;
+                    }
+                }
+            }
+
+            if (JSON.stringify(param) === "{}") {
+                if (isWithUI) {
+                    if (isSignEnvelop) {
+                        FinCert.Sdk.signEnvelop();
+                    } else {
+                        FinCert.Sdk.sign();
+                    }
+                } else {
+                    FinCert.Sdk.signWithoutUI();
+                }
+            } else {
+                param.success = function (_result) {
+                    alertPassedTime();
+
+                    var resultArr;
+                    if (Array.isArray(_result)) {
+                        resultArr = _result;
+                    } else {
+                        resultArr = [];
+                        resultArr[0] = _result;
+                    }
+
+                    var signedValString = "";
+                    for (j = 0; j < resultArr.length; j++) {
+                        var result = resultArr[j];
+
+                        // signedVals : Array of String(전자서명값)
+                        for (var i = 0; i < result.signedVals.length; i++) {
+                            if (signedValString != "") {
+                                signedValString = signedValString + "\n";
+                            }
+                            signedValString =
+                                signedValString + "[" + result.signedVals[i] + "]";
+                        }
+
+                        customAlert(
+                            "[" +
+                            j +
+                            "] 전자서명 수행한 인증서의 일련번호 : " +
+                            result.certSeqNum
+                        );
+
+                        if (simpleKeyReq) {
+                            customAlert(
+                                "[" +
+                                j +
+                                "] 간편인증 정보를 등록하기 위한 간편인증토큰 : " +
+                                result.simpleKeyToken
+                            );
+                        }
+
+                        if (result.hashAlgorithm) {
+                            customAlert(
+                                "[" + j + "] 원문 해시 알고리즘 : " + result.hashAlgorithm
+                            );
+                        }
+
+                        if (result.hashedVals) {
+                            for (var i = 0; i < result.hashedVals.length; i++) {
+                                customAlert(
+                                    "[" +
+                                    j +
+                                    "] 인코딩된 원문의 해시값 : " +
+                                    result.hashedVals[i]
+                                );
+                            }
+                        }
+
+                        if (result.certificate) {
+                            customAlert(
+                                "[ " +
+                                j +
+                                "] 전자서명을 수행한 인증서 : " +
+                                result.certificate
+                            );
+                        }
+
+                        if (result.rValue) {
+                            customAlert("[ " + j + "] 인증서의 R값 : " + result.rValue);
+                        }
+                    }
+
+                    document.getElementById("signedVals").value = signedValString;
+
+                    if (
+                        document.getElementById("openVerificationSend").value == "true"
+                    ) {
+                        if (
+                            param.signFormat &&
+                            param.signFormat.CMSInfo &&
+                            param.signFormat.CMSInfo.withoutContent
+                        ) {
+                            if (resultArr[0].hashedVals) {
+                                openAPI(
+                                    "withoutContent",
+                                    resultArr[0].signedVals[0],
+                                    null,
+                                    resultArr[0].hashedVals[0]
+                                );
+                            } else {
+                                openAPI(
+                                    "withoutContent",
+                                    resultArr[0].signedVals[0],
+                                    null,
+                                    param.content.hash.hashes[0]
+                                );
+                            }
+                        } else {
+                            openAPI("verification", resultArr[0].signedVals[0]);
+                        }
+                    }
+
+                    if (
+                        document.getElementById("openUcpidServerSend").value == "true" &&
+                        param &&
+                        param.content &&
+                        param.content.ucpidInfo
+                    ) {
+                        // UCPID 서버로의 전송
+                        openAPI("ucpid", resultArr[0].signedVals[0], ucpidNonce);
+                    }
+                };
+
+                param.fail = failCallback;
+
+                if (isSignEnvelop) {
+                    var encCert = document.getElementById("encCert").value;
+                    if (encCert.length > 0) {
+                        param.encCert = encCert;
+                    }
+                }
+
+                var signParam;
+                var count = getValueFromSelect("signParamCount");
+                if (count.length > 0) {
+                    signParam = [];
+                    var i;
+                    var countNum = Number.parseInt(count);
+                    for (i = 0; i < count; i++) {
+                        signParam[i] = param;
+                    }
+                } else {
+                    signParam = param;
+                }
+
+                setStartTime();
+                try {
+                    if (isWithUI) {
+                        if (isSignEnvelop) {
+                            FinCert.Sdk.signEnvelop(signParam);
+                        } else {
+                            FinCert.Sdk.sign(signParam);
+                        }
+                    } else {
+                        FinCert.Sdk.signWithoutUI(signParam);
+                    }
+                } catch (err) {
+                    customAlert(err);
+                }
+            }
+        }
+
+        function getYYYYMMDD() {
+            var date = new Date();
+            var year = date.getFullYear();
+            var month = new String(date.getMonth() + 1);
+            var day = new String(date.getDate());
+
+            // 임시로...
+           /* var hour = new String(date.getHours());
+            var minute = new String(date.getMinutes());
+            var second = new String(date.getSeconds());*/
+
+            if (month.length == 1) {
+                month = "0" + month;
+            }
+
+            if (day.length == 1) {
+                day = "0" + day;
+            }
+
+           /* if (hour.length == 1) {
+                hour = "0" + hour;
+            }
+
+            if (minute.length == 1) {
+                minute = "0" + minute;
+            }
+
+            if (second.length == 1) {
+                second = "0" + second;
+            }*/
+
+            return year + month + day ;
+        }
+
+        function alertPassedTime() {
+            customAlert(new Date() - startTime + "ms passed");
+        }
+    </script>
+</body>
+
+</html>
